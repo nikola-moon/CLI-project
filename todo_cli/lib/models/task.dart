@@ -1,8 +1,10 @@
 import 'priority.dart';
 
+/// Contract for objects that can be persisted as a JSON map.
 abstract class JsonSerializable {
   Map<String, dynamic> toJson();
 }
+/// Shared state and serialization behaviour for every task type.
 abstract class Task implements JsonSerializable {
   final String id;
   String title;
@@ -42,6 +44,7 @@ abstract class Task implements JsonSerializable {
 }
 
 // Classes concrètes dérivees de Task
+/// A normal task whose priority is selected by the user.
 class StandardTask extends Task {
   StandardTask({
     required super.id,
@@ -55,6 +58,7 @@ class StandardTask extends Task {
   String get typeName => 'Standard';
 }
 
+/// A specialised task that always has [Priority.elevee].
 class UrgentTask extends Task {
   UrgentTask({
     required super.id,

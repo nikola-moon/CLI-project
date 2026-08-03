@@ -1,4 +1,5 @@
 import 'package:todo_cli/exception/app_exception.dart';
+import 'package:todo_cli/repositories/repository.dart';
 import 'package:todo_cli/repositories/task_repo.dart';
 
 /// Parses a user-entered due date. Empty values are accepted and treated as no deadline.
@@ -20,7 +21,7 @@ DateTime? parseDueDate(String? dateInput) {
 }
 
 /// Updates an existing task as completed, with clear error messages for missing IDs.
-Future<void> completeTask(String? id, {JsonTaskRepository? repository}) async {
+Future<void> completeTask(String? id, {TaskRepository? repository}) async {
   final targetRepo = repository ?? JsonTaskRepository('tasks.json');
 
   if (id == null || id.isEmpty) {
@@ -37,7 +38,7 @@ Future<void> completeTask(String? id, {JsonTaskRepository? repository}) async {
 }
 
 /// Deletes an existing task and raises a specific exception when the ID is unknown.
-Future<void> deleteTask(String? id, {JsonTaskRepository? repository}) async {
+Future<void> deleteTask(String? id, {TaskRepository? repository}) async {
   final targetRepo = repository ?? JsonTaskRepository('tasks.json');
 
   if (id == null || id.isEmpty) {

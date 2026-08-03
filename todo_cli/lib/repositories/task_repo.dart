@@ -5,7 +5,8 @@ import '../models/priority.dart';
 import '../exception/app_exception.dart';
 import 'repository.dart';
 
-class JsonTaskRepository implements Repository<Task> {
+/// JSON-file implementation of the task persistence contract.
+class JsonTaskRepository implements TaskRepository {
   final File _file;
 
   JsonTaskRepository(String filePath) : _file = File(filePath);

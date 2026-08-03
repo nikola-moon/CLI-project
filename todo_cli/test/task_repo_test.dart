@@ -71,6 +71,21 @@ void main() {
   });
 
   group('JsonTaskRepository edge cases', () {
+    test('getAll returns an empty list for an empty file', () async {
+      await File(testFilePath).writeAsString('   ');
+
+      expect(await repo.getAll(), isEmpty);
+    });
+
+    test('getAll wraps corrupted JSON in a TaskException', () async {
+      await File(testFilePath).writeAsString('{not-json');
+
+      await expectLater(
+        repo.getAll,
+        throwsA(isA<TaskException>()),
+      );
+    });
+
     test('getById returns null for an unknown ID', () async {
       expect(await repo.getById('unknown'), isNull);
     });
@@ -96,6 +111,22 @@ void main() {
       expect(task, isA<UrgentTask>());
       expect(task.dueDate, equals(dueDate));
       expect(task.priority, equals(Priority.elevee));
+    });
+
+    test('getAll preserves a larger collection of tasks', () async {
+      for (var index = 0; index < 25; index++) {
+        await repo.add(
+          StandardTask(
+            id: 'task-$index',
+            title: 'Task $index',
+            priority: Priority.moyenne,
+          ),
+        );
+      }
+
+      final tasks = await repo.getAll();
+      expect(tasks, hasLength(25));
+      expect(tasks.last.id, equals('task-24'));
     });
   });
 }
