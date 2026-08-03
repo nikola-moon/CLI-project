@@ -18,13 +18,10 @@ jobs:
           sdk: stable
 
       - name: Install dependencies
-        working-directory: ./todo_cli
         run: dart pub get
 
       - name: Analyze project
-        working-directory: ./todo_cli
         run: dart analyze
 
       - name: Run tests
-        working-directory: ./todo_cli
         run: dart test
