@@ -1,13 +1,14 @@
 import 'dart:io';
-import '../lib/models/task.dart';
-import '../lib/models/priority.dart';
-import '../lib/repositories/task_repo.dart';
-import '../lib/exception/app_exception.dart';
+import 'package:uuid/uuid.dart';
+import 'package:todo_cli/cli_helpers.dart';
+import 'package:todo_cli/exception/app_exception.dart';
+import 'package:todo_cli/models/priority.dart';
+import 'package:todo_cli/models/task.dart';
+import 'package:todo_cli/repositories/task_repo.dart';
 
 final repo = JsonTaskRepository('tasks.json');
 
 void main() async {
- 
   print('    GESTIONNAIRE DE TÂCHES CLI     ');
 
 
@@ -71,15 +72,10 @@ Future<void> _addTask() async {
 
   stdout.write('Date limite facultative (AAAA-MM-JJ) : ');
   final dateInput = stdin.readLineSync()?.trim();
-  DateTime? dueDate;
-  if (dateInput != null && dateInput.isNotEmpty) {
-    dueDate = DateTime.tryParse(dateInput);
-    if (dueDate == null) {
-      throw TaskException('Format de date invalide (attendu : AAAA-MM-JJ).');
-    }
-  }
+  final dueDate = parseDueDate(dateInput);
 
-  final id = DateTime.now().millisecondsSinceEpoch.toString().substring(7);
+  // UUID v4 avoids collisions from time-based identifiers and makes task IDs safer.
+  final id = const Uuid().v4();
   final Task newTask = isUrgent
       ? UrgentTask(id: id, title: title, dueDate: dueDate)
       : StandardTask(id: id, title: title, priority: priority, dueDate: dueDate);
@@ -122,19 +118,14 @@ Future<void> _completeTask() async {
   final id = stdin.readLineSync()?.trim();
   if (id == null || id.isEmpty) throw TaskException('ID invalide.');
 
-  final task = await repo.getById(id);
-  if (task == null) throw TaskException('Tâche #$id introuvable.');
-
-  task.isCompleted = true;
-  await repo.update(task);
+  await completeTask(id, repository: repo);
   print('✅ Tâche #$id marquée comme terminée !');
 }
 
 Future<void> _deleteTask() async {
   stdout.write('ID de la tâche à supprimer : ');
   final id = stdin.readLineSync()?.trim();
-  if (id == null || id.isEmpty) throw TaskException('ID invalide.');
 
-  await repo.delete(id);
+  await deleteTask(id, repository: repo);
   print('🗑️ Tâche #$id supprimée avec succès !');
 }

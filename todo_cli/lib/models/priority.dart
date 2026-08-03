@@ -9,8 +9,12 @@ enum Priority implements Comparable<Priority> {
   @override
   int compareTo(Priority other) => value.compareTo(other.value);
 
+  /// Converts CLI and JSON priority values to their enum representation.
+  ///
+  /// Unknown values deliberately fall back to [Priority.faible], preserving
+  /// compatibility with older or manually edited task files.
   static Priority fromString(String str) {
-    switch (str.toLowerCase()) {
+    switch (str.trim().toLowerCase()) {
       case 'elevee':
       case 'élevée':
       case '3':

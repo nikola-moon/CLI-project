@@ -35,7 +35,8 @@ abstract class Task implements JsonSerializable {
   @override
   String toString() {
     final status = isCompleted ? '[X]' : '[ ]';
-    final dateStr = dueDate != null ? ' | Limite: ${dueDate!.toLocal().toString().split(' ')[0]}' : '';
+    // Store the date in a stable ISO format to avoid implicit timezone conversion in the CLI display.
+    final dateStr = dueDate != null ? ' | Limite: ${dueDate!.toIso8601String().split('T').first}' : '';
     return '$status #$id - [$typeName] $title (Priorité: ${priority.name.toUpperCase()}$dateStr)';
   }
 }

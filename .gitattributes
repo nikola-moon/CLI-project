@@ -1,0 +1,2 @@
+# Keep repository text files portable across Windows, GitHub Actions, and Unix.
+* text=auto eol=lf
