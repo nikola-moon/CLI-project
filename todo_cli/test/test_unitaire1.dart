@@ -59,5 +59,6 @@ void main() {
       expect(task.isCompleted, isTrue);
       expect(task.toString(), contains('[X]'));
     });
+
   });
 }
