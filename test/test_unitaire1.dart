@@ -11,7 +11,8 @@ void main() {
       expect(task.typeName, equals('URGENTE'));
     });
 
-    test('Une StandardTask convertie en JSON contient les bonnes propriétés', () {
+    test('Une StandardTask convertie en JSON contient les bonnes propriétés',
+        () {
       final task = StandardTask(
         id: '2',
         title: 'Faire les courses',
@@ -41,7 +42,8 @@ void main() {
       expect(json['dueDate'], equals(dueDate.toIso8601String()));
     });
 
-    test('Une UrgentTask garde un typeName spécifique et une priorité élevée', () {
+    test('Une UrgentTask garde un typeName spécifique et une priorité élevée',
+        () {
       final task = UrgentTask(id: '4', title: 'Incident majeur');
 
       expect(task.typeName, equals('URGENTE'));
@@ -59,6 +61,5 @@ void main() {
       expect(task.isCompleted, isTrue);
       expect(task.toString(), contains('[X]'));
     });
-
   });
 }

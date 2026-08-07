@@ -3,27 +3,23 @@ import 'dart:io';
 import 'package:todo_cli/cli_helpers.dart';
 import 'package:todo_cli/exception/app_exception.dart';
 import 'package:todo_cli/models/priority.dart';
-import 'package:todo_cli/models/task.dart';
 import 'package:todo_cli/repositories/repository.dart';
-import 'package:uuid/uuid.dart';
+import 'package:todo_cli/services/task_service.dart';
 
-/// Coordinates the interactive CLI while keeping persistence behind a contract.
+/// Displays the terminal interface and delegates business rules to [TaskService].
 class CliService {
-  final TaskRepository _repository;
+  final TaskService _taskService;
 
-  CliService(this._repository);
+  CliService(TaskRepository repository)
+      : _taskService = TaskService(repository);
 
-  /// Starts the menu loop and converts expected application failures to messages.
   Future<void> run() async {
-    print('    GESTIONNAIRE DE TACHES CLI     ');
+    print('    GESTIONNAIRE DE TÂCHES CLI     ');
     var running = true;
-
     while (running) {
       _printMenu();
-      final input = stdin.readLineSync()?.trim();
-
       try {
-        switch (input) {
+        switch (stdin.readLineSync()?.trim()) {
           case '1':
             await _addTask();
             break;
@@ -41,10 +37,10 @@ class CliService {
             print('Au revoir !');
             break;
           default:
-            print('Option invalide, reessayez.');
+            print('Option invalide, réessayez.');
         }
       } on TaskException catch (error) {
-        print('Erreur : $error');
+        print('Erreur : ${error.message}');
       } catch (error) {
         print('Erreur inattendue : $error');
       }
@@ -53,76 +49,74 @@ class CliService {
 
   void _printMenu() {
     print('\nMenu:');
-    print('1. Ajouter une tache');
-    print('2. Lister les taches');
-    print('3. Marquer une tache comme terminee');
-    print('4. Supprimer une tache');
+    print('1. Ajouter une tâche');
+    print('2. Lister les tâches');
+    print('3. Marquer une tâche comme terminée');
+    print('4. Supprimer une tâche');
     print('5. Quitter');
     stdout.write('Choix > ');
   }
 
   Future<void> _addTask() async {
-    stdout.write('Titre de la tache : ');
-    final title = stdin.readLineSync()?.trim();
-    if (title == null || title.isEmpty) {
-      throw TaskException('Le titre ne peut pas etre vide.');
+    stdout.write('Titre de la tâche : ');
+    final title = stdin.readLineSync() ?? '';
+    stdout.write('Priorité (1: faible, 2: moyenne, 3: élevée) : ');
+    final priority = _readPriority(stdin.readLineSync());
+    var isUrgent = false;
+    if (priority == Priority.elevee) {
+      stdout.write('Marquer comme urgente ? (o/n) [n] : ');
+      isUrgent = stdin.readLineSync()?.trim().toLowerCase() == 'o';
     }
-
-    stdout.write('Est-ce une tache urgente ? (o/n) [n] : ');
-    final isUrgent = stdin.readLineSync()?.trim().toLowerCase() == 'o';
-    var priority = Priority.faible;
-    if (!isUrgent) {
-      stdout.write('Priorite (1: Faible, 2: Moyenne, 3: Elevee) [1] : ');
-      priority = Priority.fromString(stdin.readLineSync() ?? '1');
-    }
-
     stdout.write('Date limite facultative (AAAA-MM-JJ) : ');
-    final dueDate = parseDueDate(stdin.readLineSync());
-    final id = const Uuid().v4();
-    final Task task = isUrgent
-        ? UrgentTask(id: id, title: title, dueDate: dueDate)
-        : StandardTask(id: id, title: title, priority: priority, dueDate: dueDate);
-
-    await _repository.add(task);
-    print('Tache ajoutee avec succes (#$id) !');
+    final task = await _taskService.addTask(
+      title: title,
+      priority: priority,
+      dueDate: parseDueDate(stdin.readLineSync()),
+      isUrgent: isUrgent,
+    );
+    print('Tâche ajoutée avec succès (#${task.id}) !');
   }
 
   Future<void> _listTasks() async {
-    final tasks = await _repository.getAll();
+    print('\nTrier par :');
+    print('1. Priorité (élevée vers faible)');
+    print('2. Date limite (la plus proche en premier)');
+    stdout.write('Choix : ');
+    final tasks = await _taskService.listTasks(_readSort(stdin.readLineSync()));
     if (tasks.isEmpty) {
-      print('Aucune tache enregistree.');
+      print('Aucune tâche enregistrée.');
       return;
     }
-
-    print('\nTrier par :\n1. Priorite\n2. Date limite');
-    stdout.write('Choix [1] > ');
-    if (stdin.readLineSync()?.trim() == '2') {
-      tasks.sort((a, b) {
-        if (a.dueDate == null) return 1;
-        if (b.dueDate == null) return -1;
-        return a.dueDate!.compareTo(b.dueDate!);
-      });
-    } else {
-      tasks.sort((a, b) => b.priority.compareTo(a.priority));
-    }
-
-    print('\n--- Liste des Taches ---');
+    print('\n--- Liste des tâches ---');
     for (final task in tasks) {
       print(task);
     }
   }
 
   Future<void> _completeTask() async {
-    stdout.write('ID de la tache a terminer : ');
-    final id = stdin.readLineSync()?.trim();
-    await completeTask(id, repository: _repository);
-    print('Tache #$id marquee comme terminee !');
+    stdout.write('ID de la tâche à terminer : ');
+    final id = stdin.readLineSync()?.trim() ?? '';
+    await _taskService.completeTask(id);
+    print('Tâche #$id marquée comme terminée !');
   }
 
   Future<void> _deleteTask() async {
-    stdout.write('ID de la tache a supprimer : ');
-    final id = stdin.readLineSync()?.trim();
-    await deleteTask(id, repository: _repository);
-    print('Tache #$id supprimee avec succes !');
+    stdout.write('ID de la tâche à supprimer : ');
+    final id = stdin.readLineSync()?.trim() ?? '';
+    await _taskService.deleteTask(id);
+    print('Tâche #$id supprimée avec succès !');
   }
+
+  Priority _readPriority(String? input) => switch (input?.trim()) {
+        '1' => Priority.faible,
+        '2' => Priority.moyenne,
+        '3' => Priority.elevee,
+        _ => throw TaskException('Priorité invalide. Choisissez 1, 2 ou 3.'),
+      };
+
+  TaskSort _readSort(String? input) => switch (input?.trim()) {
+        '1' => TaskSort.priority,
+        '2' => TaskSort.dueDate,
+        _ => throw TaskException('Tri invalide. Choisissez 1 ou 2.'),
+      };
 }

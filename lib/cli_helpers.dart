@@ -1,6 +1,7 @@
 import 'package:todo_cli/exception/app_exception.dart';
 import 'package:todo_cli/repositories/repository.dart';
 import 'package:todo_cli/repositories/task_repo.dart';
+import 'package:todo_cli/services/task_service.dart';
 
 /// Parses a user-entered due date. Empty values are accepted and treated as no deadline.
 DateTime? parseDueDate(String? dateInput) {
@@ -28,13 +29,7 @@ Future<void> completeTask(String? id, {TaskRepository? repository}) async {
     throw TaskException('ID invalide.');
   }
 
-  final task = await targetRepo.getById(id);
-  if (task == null) {
-    throw TaskException('Tâche #$id introuvable.');
-  }
-
-  task.isCompleted = true;
-  await targetRepo.update(task);
+  await TaskService(targetRepo).completeTask(id);
 }
 
 /// Deletes an existing task and raises a specific exception when the ID is unknown.
@@ -45,5 +40,5 @@ Future<void> deleteTask(String? id, {TaskRepository? repository}) async {
     throw TaskException('ID invalide.');
   }
 
-  await targetRepo.delete(id);
+  await TaskService(targetRepo).deleteTask(id);
 }

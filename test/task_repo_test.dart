@@ -24,7 +24,8 @@ void main() {
 
   group('JsonTaskRepository', () {
     test('Ajouter une tâche enregistre bien l\'élément', () async {
-      final task = StandardTask(id: '100', title: 'Test Repo', priority: Priority.faible);
+      final task = StandardTask(
+          id: '100', title: 'Test Repo', priority: Priority.faible);
 
       await repo.add(task);
       final tasks = await repo.getAll();
@@ -33,14 +34,17 @@ void main() {
       expect(tasks.first.title, equals('Test Repo'));
     });
 
-    test('Récupérer toutes les tâches renvoie une liste vide si le fichier n\'existe pas', () async {
+    test(
+        'Récupérer toutes les tâches renvoie une liste vide si le fichier n\'existe pas',
+        () async {
       final tasks = await repo.getAll();
 
       expect(tasks, isEmpty);
     });
 
     test('Récupérer une tâche par ID retourne bien la bonne tâche', () async {
-      final task = StandardTask(id: '42', title: 'Task 42', priority: Priority.moyenne);
+      final task =
+          StandardTask(id: '42', title: 'Task 42', priority: Priority.moyenne);
       await repo.add(task);
 
       final result = await repo.getById('42');
@@ -50,10 +54,15 @@ void main() {
     });
 
     test('Mettre à jour une tâche modifie bien ses données', () async {
-      final task = StandardTask(id: '200', title: 'Avant', priority: Priority.faible);
+      final task =
+          StandardTask(id: '200', title: 'Avant', priority: Priority.faible);
       await repo.add(task);
 
-      final updated = StandardTask(id: '200', title: 'Après', priority: Priority.elevee, isCompleted: true);
+      final updated = StandardTask(
+          id: '200',
+          title: 'Après',
+          priority: Priority.elevee,
+          isCompleted: true);
       await repo.update(updated);
 
       final tasks = await repo.getAll();
@@ -105,7 +114,8 @@ void main() {
 
     test('getAll restores urgent tasks and their due date', () async {
       final dueDate = DateTime.utc(2026, 8, 15);
-      await repo.add(UrgentTask(id: 'urgent', title: 'Incident', dueDate: dueDate));
+      await repo
+          .add(UrgentTask(id: 'urgent', title: 'Incident', dueDate: dueDate));
 
       final task = (await repo.getAll()).single;
       expect(task, isA<UrgentTask>());

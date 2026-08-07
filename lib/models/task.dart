@@ -4,6 +4,7 @@ import 'priority.dart';
 abstract class JsonSerializable {
   Map<String, dynamic> toJson();
 }
+
 /// Shared state and serialization behaviour for every task type.
 abstract class Task implements JsonSerializable {
   final String id;
@@ -38,7 +39,9 @@ abstract class Task implements JsonSerializable {
   String toString() {
     final status = isCompleted ? '[X]' : '[ ]';
     // Store the date in a stable ISO format to avoid implicit timezone conversion in the CLI display.
-    final dateStr = dueDate != null ? ' | Limite: ${dueDate!.toIso8601String().split('T').first}' : '';
+    final dateStr = dueDate != null
+        ? ' | Limite: ${dueDate!.toIso8601String().split('T').first}'
+        : '';
     return '$status #$id - [$typeName] $title (Priorité: ${priority.name.toUpperCase()}$dateStr)';
   }
 }

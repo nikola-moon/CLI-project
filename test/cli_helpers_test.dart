@@ -64,7 +64,8 @@ void main() {
       expect(saved!.isCompleted, isTrue);
     });
 
-    test('completeTask lance une exception si la tâche n\'existe pas', () async {
+    test('completeTask lance une exception si la tâche n\'existe pas',
+        () async {
       await expectLater(
         () => completeTask('inconnu', repository: repo),
         throwsA(isA<TaskException>()),
@@ -93,7 +94,8 @@ void main() {
     });
   });
   group('additional validation paths', () {
-    test('Priority.fromString trims numeric input and defaults unknown values', () {
+    test('Priority.fromString trims numeric input and defaults unknown values',
+        () {
       expect(Priority.fromString(' 3 '), equals(Priority.elevee));
       expect(Priority.fromString('2'), equals(Priority.moyenne));
       expect(Priority.fromString(''), equals(Priority.faible));
@@ -102,7 +104,8 @@ void main() {
 
     test('parseDueDate rejects impossible dates and date-times', () {
       expect(() => parseDueDate('2026-02-30'), throwsA(isA<TaskException>()));
-      expect(() => parseDueDate('2026-08-15T10:00:00'), throwsA(isA<TaskException>()));
+      expect(() => parseDueDate('2026-08-15T10:00:00'),
+          throwsA(isA<TaskException>()));
     });
 
     test('completeTask and deleteTask reject empty IDs', () async {
