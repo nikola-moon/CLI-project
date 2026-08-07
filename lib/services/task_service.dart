@@ -59,6 +59,25 @@ class TaskService {
     await _repository.delete(id);
   }
 
+  /// Converts a high-priority standard task into an [UrgentTask].
+  ///
+  /// Urgency is a task type, independent from the priority used for sorting.
+  Future<void> markAsUrgent(String id) async {
+    final task = await _findTask(id);
+    if (task is UrgentTask) return;
+    if (task.priority != Priority.elevee) {
+      throw TaskException(
+        'Seules les tâches de priorité élevée peuvent devenir urgentes.',
+      );
+    }
+    await _repository.update(UrgentTask(
+      id: task.id,
+      title: task.title,
+      dueDate: task.dueDate,
+      isCompleted: task.isCompleted,
+    ));
+  }
+
   Future<Task> _findTask(String id) async {
     _validateId(id);
     final task = await _repository.getById(id);

@@ -5,6 +5,7 @@ import 'package:todo_cli/exception/app_exception.dart';
 import 'package:todo_cli/models/priority.dart';
 import 'package:todo_cli/models/task.dart';
 import 'package:todo_cli/repositories/task_repo.dart';
+import 'package:todo_cli/repositories/in_memory_repository.dart';
 import 'package:todo_cli/services/task_service.dart';
 
 void main() {
@@ -55,5 +56,24 @@ void main() {
           title: 'Incident', priority: Priority.faible, isUrgent: true),
       throwsA(isA<TaskException>()),
     );
+  });
+
+  test('marks an existing high-priority task as an UrgentTask', () async {
+    final task = await service.addTask(title: 'Incident', priority: Priority.elevee);
+
+    await service.markAsUrgent(task.id);
+    final stored = (await service.listTasks(TaskSort.priority)).single;
+
+    expect(stored, isA<UrgentTask>());
+    expect(stored.toString(), contains('🚨'));
+  });
+
+  test('works with the interchangeable in-memory repository', () async {
+    final memoryService = TaskService(InMemoryTaskRepository());
+    final task = await memoryService.addTask(title: 'Démo', priority: Priority.faible);
+
+    await memoryService.completeTask(task.id);
+
+    expect((await memoryService.listTasks(TaskSort.priority)).single.isCompleted, isTrue);
   });
 }

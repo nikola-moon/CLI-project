@@ -3,6 +3,7 @@ export 'exception/app_exception.dart';
 export 'models/priority.dart';
 export 'models/task.dart';
 export 'repositories/repository.dart';
+export 'repositories/in_memory_repository.dart';
 export 'repositories/task_repo.dart';
 export 'services/cli_service.dart';
 export 'services/task_service.dart';

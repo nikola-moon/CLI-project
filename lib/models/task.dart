@@ -23,6 +23,9 @@ abstract class Task implements JsonSerializable {
 
   String get typeName;
 
+  /// Visual indicator used by the CLI. Subclasses can make their state visible.
+  String get displayMarker => '';
+
   @override
   Map<String, dynamic> toJson() {
     return {
@@ -42,7 +45,7 @@ abstract class Task implements JsonSerializable {
     final dateStr = dueDate != null
         ? ' | Limite: ${dueDate!.toIso8601String().split('T').first}'
         : '';
-    return '$status #$id - [$typeName] $title (Priorité: ${priority.name.toUpperCase()}$dateStr)';
+    return '$status $displayMarker#$id - [$typeName] $title (Priorité: ${priority.name.toUpperCase()}$dateStr)';
   }
 }
 
@@ -72,4 +75,10 @@ class UrgentTask extends Task {
 
   @override
   String get typeName => 'URGENTE';
+
+  /// Urgent tasks are visually distinct and signal immediate attention.
+  @override
+  String get displayMarker => '🚨 ';
+
+  bool get requiresImmediateAttention => !isCompleted;
 }

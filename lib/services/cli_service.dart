@@ -30,9 +30,12 @@ class CliService {
             await _completeTask();
             break;
           case '4':
-            await _deleteTask();
+            await _markAsUrgent();
             break;
           case '5':
+            await _deleteTask();
+            break;
+          case '6':
             running = false;
             print('Au revoir !');
             break;
@@ -52,8 +55,9 @@ class CliService {
     print('1. Ajouter une tâche');
     print('2. Lister les tâches');
     print('3. Marquer une tâche comme terminée');
-    print('4. Supprimer une tâche');
-    print('5. Quitter');
+    print('4. Marquer une tâche comme urgente');
+    print('5. Supprimer une tâche');
+    print('6. Quitter');
     stdout.write('Choix > ');
   }
 
@@ -105,6 +109,13 @@ class CliService {
     final id = stdin.readLineSync()?.trim() ?? '';
     await _taskService.deleteTask(id);
     print('Tâche #$id supprimée avec succès !');
+  }
+
+  Future<void> _markAsUrgent() async {
+    stdout.write('ID de la tâche de priorité élevée à rendre urgente : ');
+    final id = stdin.readLineSync()?.trim() ?? '';
+    await _taskService.markAsUrgent(id);
+    print('Tâche #$id marquée comme urgente !');
   }
 
   Priority _readPriority(String? input) => switch (input?.trim()) {
