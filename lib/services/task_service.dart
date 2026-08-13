@@ -21,8 +21,7 @@ class TaskService {
     bool isUrgent = false,
   }) async {
     final cleanTitle = title.trim();
-    if (cleanTitle.isEmpty)
-      throw TaskException('Le titre ne peut pas être vide.');
+    if (cleanTitle.isEmpty) throw TaskValidationException('Le titre ne peut pas être vide.');
     if (isUrgent && priority != Priority.elevee) {
       throw TaskException('Une tâche urgente doit avoir une priorité élevée.');
     }
@@ -38,7 +37,9 @@ class TaskService {
   }
 
   Future<List<Task>> listTasks(TaskSort sort) async {
-    final tasks = await _repository.getAll();
+    // Make a mutable copy before sorting so implementations that return
+    // unmodifiable lists (e.g. InMemoryRepository) won't throw.
+    final tasks = (await _repository.getAll()).toList();
     tasks.sort(switch (sort) {
       TaskSort.priority => (a, b) => b.priority.compareTo(a.priority),
       TaskSort.dueDate => _compareDueDates,
@@ -56,7 +57,13 @@ class TaskService {
 
   Future<void> deleteTask(String id) async {
     _validateId(id);
-    await _repository.delete(id);
+    try {
+      await _repository.delete(id);
+    } on TaskException {
+      // Translate repository-level not-found errors into a domain-specific
+      // TaskNotFoundException for callers of the service.
+      throw TaskNotFoundException(id);
+    }
   }
 
   /// Converts a high-priority standard task into an [UrgentTask].

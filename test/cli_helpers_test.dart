@@ -11,8 +11,11 @@ void main() {
       expect(Priority.fromString('1'), Priority.faible);
     });
 
-    test('uses low priority for legacy unknown values', () {
-      expect(Priority.fromString('inconnu'), Priority.faible);
+    test('rejects unknown priorities with a validation exception', () {
+      expect(
+        () => Priority.fromString('inconnu'),
+        throwsA(isA<TaskValidationException>()),
+      );
     });
   });
 

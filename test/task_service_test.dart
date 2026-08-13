@@ -68,6 +68,34 @@ void main() {
     expect(stored.toString(), contains('🚨'));
   });
 
+  test('rejects an empty title before persisting anything', () async {
+    await expectLater(
+      () => service.addTask(title: '   ', priority: Priority.faible),
+      throwsA(isA<TaskValidationException>()),
+    );
+  });
+
+  test('deletes an existing task and raises a not-found exception for missing ones', () async {
+    final task = await service.addTask(title: 'À supprimer', priority: Priority.faible);
+
+    await service.deleteTask(task.id);
+    expect(await service.listTasks(TaskSort.priority), isEmpty);
+
+    await expectLater(
+      () => service.deleteTask('missing-id'),
+      throwsA(isA<TaskNotFoundException>()),
+    );
+  });
+
+  test('completes a task and reports it as done', () async {
+    final task = await service.addTask(title: 'Faire la review', priority: Priority.moyenne);
+
+    await service.completeTask(task.id);
+
+    final stored = (await service.listTasks(TaskSort.priority)).single;
+    expect(stored.isCompleted, isTrue);
+  });
+
   test('works with the interchangeable in-memory repository', () async {
     final memoryService = TaskService(InMemoryTaskRepository());
     final task = await memoryService.addTask(title: 'Démo', priority: Priority.faible);

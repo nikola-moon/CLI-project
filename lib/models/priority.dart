@@ -1,3 +1,5 @@
+import '../exception/app_exception.dart';
+
 enum Priority implements Comparable<Priority> {
   faible(1),
   moyenne(2),
@@ -9,12 +11,12 @@ enum Priority implements Comparable<Priority> {
   @override
   int compareTo(Priority other) => value.compareTo(other.value);
 
-  /// Converts CLI and JSON priority values to their enum representation.
+  /// Converts the supported CLI and JSON values to a priority.
   ///
-  /// Unknown values deliberately fall back to [Priority.faible], preserving
-  /// compatibility with older or manually edited task files.
-  static Priority fromString(String str) {
-    switch (str.trim().toLowerCase()) {
+  /// Invalid values are rejected so a manual JSON edit cannot silently change
+  /// a task to low priority.
+  static Priority fromString(String value) {
+    switch (value.trim().toLowerCase()) {
       case 'elevee':
       case 'élevée':
       case '3':
@@ -24,8 +26,9 @@ enum Priority implements Comparable<Priority> {
         return Priority.moyenne;
       case 'faible':
       case '1':
-      default:
         return Priority.faible;
+      default:
+        throw TaskValidationException('Priorité invalide : "$value".');
     }
   }
 }

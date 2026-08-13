@@ -40,3 +40,24 @@ Une `UrgentTask` est une spécialisation de `Task` : sa priorité est toujours �
 dart test
 dart analyze
 ```
+
+## Dépôt
+
+Le code est prêt à être publié sur GitHub : https://github.com/nikola-moon/CLI-project
+
+## Publier sur GitHub
+
+1. Vérifiez que les modifications sont commitées :
+
+```bash
+git add .
+git commit -m "Finish TaskService fixes; update README and pubspec"
+```
+
+2. Poussez sur la branche `main` :
+
+```bash
+git push origin main
+```
+
+Si vous préférez, je peux préparer la commande de commit pour vous ou créer la PR (nécessite accès Git). Dites-moi ce que vous préférez.
